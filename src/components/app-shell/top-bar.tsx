@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HardHat } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { navItems } from "@/components/app-shell/nav-items";
+import { navItems, settingsNav } from "@/components/app-shell/nav-items";
 
 /**
  * 상단바.
@@ -32,25 +32,38 @@ export function TopBar({ workspaceName }: { workspaceName: string }) {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
-          {navItems.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-secondary text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="flex items-center gap-1">
+          <nav className="hidden items-center gap-1 md:flex">
+            {navItems.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <Link
+            href={settingsNav.href}
+            aria-label="설정"
+            className={cn(
+              "tap-target flex items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground",
+              pathname.startsWith(settingsNav.href) && "text-foreground",
+            )}
+          >
+            <settingsNav.icon className="size-5" />
+          </Link>
+        </div>
       </div>
     </header>
   );

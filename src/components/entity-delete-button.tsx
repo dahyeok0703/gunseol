@@ -8,7 +8,14 @@ import type { Route } from "next";
 
 import { deleteClientAction } from "@/lib/actions/clients";
 import { deleteProjectAction } from "@/lib/actions/projects";
+import { deleteCatalogItemAction } from "@/lib/actions/catalog";
 import { Button } from "@/components/ui/button";
+
+const deleteActions = {
+  client: deleteClientAction,
+  project: deleteProjectAction,
+  catalog: deleteCatalogItemAction,
+} as const;
 
 /**
  * soft delete 버튼 (2단계 확인).
@@ -20,7 +27,7 @@ export function EntityDeleteButton({
   redirectTo,
   label,
 }: {
-  kind: "client" | "project";
+  kind: keyof typeof deleteActions;
   id: string;
   redirectTo: Route;
   label: string;
@@ -31,8 +38,7 @@ export function EntityDeleteButton({
 
   function onDelete() {
     startTransition(async () => {
-      const res =
-        kind === "client" ? await deleteClientAction({ id }) : await deleteProjectAction({ id });
+      const res = await deleteActions[kind]({ id });
       if (!res.ok) {
         toast.error(res.error);
         return;

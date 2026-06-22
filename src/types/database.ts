@@ -118,6 +118,8 @@ export interface Database {
           unit: string | null;
           default_unit_price: number;
           default_cost: number;
+          is_favorite: boolean;
+          deleted_at: string | null;
         } & WithTimestamps;
         Insert: {
           id?: string;
@@ -127,8 +129,26 @@ export interface Database {
           unit?: string | null;
           default_unit_price?: number;
           default_cost?: number;
+          is_favorite?: boolean;
+          deleted_at?: string | null;
         } & InsertTimestamps;
         Update: Partial<Database["public"]["Tables"]["catalog_items"]["Insert"]>;
+        Relationships: [];
+      };
+      catalog_categories: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          name: string;
+          sort_order: number;
+        } & WithTimestamps;
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          name: string;
+          sort_order?: number;
+        } & InsertTimestamps;
+        Update: Partial<Database["public"]["Tables"]["catalog_categories"]["Insert"]>;
         Relationships: [];
       };
       estimates: {

@@ -25,7 +25,8 @@ auth.users
         │     ├─ statements (거래명세/발주)
         │     ├─ payments (수금/기성)  ── 미수금 추적
         │     └─ documents (업로드 자료)
-        ├─ catalog_items (나만의 단가표)
+        ├─ catalog_categories (공정 카테고리)  ── 가입 시 기본값 시드
+        ├─ catalog_items (나만의 단가표)       ── is_favorite, soft delete
         ├─ ai_usage (AI 사용량 집계)         ── 마진 보호
         ├─ audit_logs (감사 로그)
         └─ billing_events (결제 웹훅 원본)
@@ -36,6 +37,11 @@ auth.users
 - 회원가입 시 `handle_new_user` 트리거가 **workspace 생성 + owner member 등록**.
   업체명/이름은 가입 시 user metadata(`workspace_name`, `name`)로 전달한다.
 - 견적 마진 = `total_price − total_cost` (라인은 `unit_price` vs `cost`).
+- **단가표**: 가입 시 기본 공정 카테고리(철거/설비/전기/목공/도장/도배/바닥/타일/
+  필름/창호/주방/기타)만 시드되고 단가는 비워둔다. `catalog_items` 가 견적 작성 시
+  자동완성/선택 소스(`src/lib/data/catalog.ts`)로 쓰인다.
+- **변경 감사**: clients/projects/catalog_items 의 INSERT/UPDATE/DELETE 가
+  `audit_changes` 트리거로 `audit_logs` 에 자동 기록된다(soft delete·상태변경 구분).
 
 ## RLS 정책 요약
 
@@ -45,7 +51,7 @@ auth.users
 | 그룹 | 테이블 | 읽기 | 쓰기 |
 | --- | --- | --- | --- |
 | 업무 | clients, projects, estimates, estimate_lines, statements, documents | 멤버 | **멤버** |
-| 금전·설정 | workspaces, members, catalog_items, contracts, payments | 멤버 | **owner** |
+| 금전·설정 | workspaces, members, catalog_items, catalog_categories, contracts, payments | 멤버 | **owner** |
 | 민감 | ai_usage, audit_logs, billing_events | **owner** | 없음 → `service_role` 만 |
 
 - 헬퍼 함수(`current_workspace_ids`, `is_workspace_member`, `is_workspace_owner`)는

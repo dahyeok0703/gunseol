@@ -29,6 +29,9 @@
   - **실행가(cost)** = 실제 들어가는 원가.
 - 마진 = 견적가 − 실행가. 마진율은 `calcMargin()`(`src/lib/utils.ts`) 으로 계산한다.
 - UI 에서 금액·마진은 **큼직한 숫자**(`.num`, `tabular-nums`)로 보여준다.
+- **단가표(catalog_items)가 견적의 단가 소스**다. 견적 라인 추가 시
+  `src/lib/data/catalog.ts` 의 `getCatalogPickerItems()` 로 품목을 불러와 단가를
+  프리필한다. 신규 데이터 조회는 server 컴포넌트에서 `src/lib/data/*` 접근자를 쓴다.
 
 ### 3. AI 는 "항목 추출"에만, **금액 판단 금지**
 
@@ -97,7 +100,8 @@ src/
     validations/   zod 스키마
   types/database.ts  Supabase 타입(수기; 프로덕션은 gen types 권장)
 supabase/
-  migrations/   0001 스키마+enum+트리거, 0002 RLS+권한
+  migrations/   0001 스키마, 0002 RLS, 0003 거래처/현장(soft delete·감사),
+                0004 단가표(카테고리 시드·즐겨찾기)
   seed.sql      데모 데이터(거래처2/현장1/품목10/견적1)
   tests/        RLS 격리 pgTAP 테스트
   README.md     데이터 모델·RLS 정책 상세

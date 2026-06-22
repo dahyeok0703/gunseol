@@ -48,11 +48,15 @@ begin
       act := tg_table_name || '.deleted';
     elsif old.deleted_at is not null and new.deleted_at is null then
       act := tg_table_name || '.restored';
-    elsif tg_table_name = 'projects' and old.status is distinct from new.status then
-      act := 'projects.status_changed';
-      m := jsonb_build_object('name', nm, 'from', old.status, 'to', new.status);
     else
       act := tg_table_name || '.updated';
+      -- status 컬럼 접근은 projects 일 때만 (중첩 IF: 다른 테이블에서 평가 방지)
+      if tg_table_name = 'projects' then
+        if old.status is distinct from new.status then
+          act := 'projects.status_changed';
+          m := jsonb_build_object('name', nm, 'from', old.status, 'to', new.status);
+        end if;
+      end if;
     end if;
   end if;
 
