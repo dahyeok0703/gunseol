@@ -1,0 +1,180 @@
+import type { Metadata, Route } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Pencil, User, MapPin, StickyNote, FileText, Calendar, Wallet, FileSignature } from "lucide-react";
+
+import { requireAuth } from "@/lib/auth/context";
+import { createClient } from "@/lib/supabase/server";
+import { formatKRW } from "@/lib/utils";
+import type { Database } from "@/types/database";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageHeader } from "@/components/app-shell/page-header";
+import { ProjectStatusBadge } from "@/components/projects/project-status-badge";
+import { StatusChanger } from "@/components/projects/status-changer";
+import { EntityDeleteButton } from "@/components/entity-delete-button";
+
+export const metadata: Metadata = { title: "현장 상세" };
+
+type ProjectOverview = Database["public"]["Views"]["project_overview"]["Row"];
+
+export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  await requireAuth();
+  const supabase = await createClient();
+
+  const { data: project } = await supabase
+    .from("project_overview")
+    .select("*")
+    .eq("id", id)
+    .returns<ProjectOverview[]>()
+    .maybeSingle();
+
+  if (!project) notFound();
+
+  return (
+    <div className="space-y-5">
+      <PageHeader
+        title={project.name}
+        action={
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/sites/${id}/edit`}>
+              <Pencil className="size-4" /> 수정
+            </Link>
+          </Button>
+        }
+      />
+
+      {/* 금액 요약 */}
+      <div className="grid grid-cols-2 gap-3">
+        <Card>
+          <CardContent className="space-y-0.5 p-4">
+            <p className="text-xs text-muted-foreground">계약금액</p>
+            <p className="num text-xl font-bold">{formatKRW(project.contract_amount)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="space-y-0.5 p-4">
+            <p className="text-xs text-muted-foreground">받을 돈</p>
+            <p className="num text-xl font-bold text-warning">{formatKRW(project.receivable)}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 상태 전환 */}
+      <Card>
+        <CardContent className="space-y-3 p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold">진행 상태</p>
+            <ProjectStatusBadge status={project.status} />
+          </div>
+          <StatusChanger projectId={id} status={project.status} />
+        </CardContent>
+      </Card>
+
+      {/* 기본 정보 */}
+      <Card>
+        <CardContent className="space-y-3 p-4">
+          <InfoRow
+            icon={User}
+            label="거래처"
+            value={project.client_name}
+            href={project.client_id ? (`/clients/${project.client_id}` as Route) : undefined}
+          />
+          <InfoRow icon={MapPin} label="현장 주소" value={project.site_address} />
+          <InfoRow icon={StickyNote} label="메모" value={project.memo} multiline />
+        </CardContent>
+      </Card>
+
+      {/* 탭 — 내용은 다음 스테이지 연결점 */}
+      <Tabs defaultValue="estimate">
+        <TabsList>
+          <TabsTrigger value="estimate">견적</TabsTrigger>
+          <TabsTrigger value="contract">계약·출력물</TabsTrigger>
+          <TabsTrigger value="schedule">일정</TabsTrigger>
+          <TabsTrigger value="payment">수금</TabsTrigger>
+        </TabsList>
+        <TabsContent value="estimate">
+          <TabPlaceholder icon={FileText} title="견적" description="이 현장의 견적을 작성·관리합니다." />
+        </TabsContent>
+        <TabsContent value="contract">
+          <TabPlaceholder
+            icon={FileSignature}
+            title="계약·출력물"
+            description="계약서, 거래명세서, 발주서를 만들고 출력합니다."
+          />
+        </TabsContent>
+        <TabsContent value="schedule">
+          <TabPlaceholder icon={Calendar} title="일정" description="공정 일정과 방문 일정을 관리합니다." />
+        </TabsContent>
+        <TabsContent value="payment">
+          <TabPlaceholder
+            icon={Wallet}
+            title="수금"
+            description="계약금·중도금·잔금 등 받을 돈을 추적합니다."
+          />
+        </TabsContent>
+      </Tabs>
+
+      <div className="pt-2">
+        <EntityDeleteButton kind="project" id={id} redirectTo="/sites" label="현장" />
+      </div>
+    </div>
+  );
+}
+
+function TabPlaceholder({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: typeof FileText;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card/50 px-6 py-12 text-center">
+      <div className="flex size-11 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+        <Icon className="size-5" />
+      </div>
+      <p className="font-semibold">{title}</p>
+      <p className="text-sm text-muted-foreground">{description}</p>
+      <span className="mt-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs text-muted-foreground">
+        다음 단계에서 연결됩니다
+      </span>
+    </div>
+  );
+}
+
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+  href,
+  multiline,
+}: {
+  icon: typeof User;
+  label: string;
+  value: string | null;
+  href?: Route;
+  multiline?: boolean;
+}) {
+  return (
+    <div className="flex gap-3">
+      <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        {href && value ? (
+          <Link href={href} className="font-medium underline-offset-4 hover:underline">
+            {value}
+          </Link>
+        ) : (
+          <p className={multiline ? "whitespace-pre-wrap font-medium" : "truncate font-medium"}>
+            {value || <span className="text-muted-foreground">—</span>}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}

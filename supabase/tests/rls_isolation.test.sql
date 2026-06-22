@@ -80,8 +80,10 @@ select throws_ok(
   'A는 타 workspace(B) 에 쓰기를 할 수 없다'
 );
 
-select is(
+-- 0003 의 감사 트리거가 자동으로 로그를 남기므로 정확한 개수 대신 ">= 1" 로 검증
+select cmp_ok(
   (select count(*)::int from public.audit_logs),
+  '>=',
   1,
   'A(owner)는 자기 workspace 감사로그를 읽는다'
 );

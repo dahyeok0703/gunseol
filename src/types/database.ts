@@ -71,6 +71,7 @@ export interface Database {
           phone: string | null;
           address: string | null;
           memo: string | null;
+          deleted_at: string | null;
         } & WithTimestamps;
         Insert: {
           id?: string;
@@ -79,6 +80,7 @@ export interface Database {
           phone?: string | null;
           address?: string | null;
           memo?: string | null;
+          deleted_at?: string | null;
         } & InsertTimestamps;
         Update: Partial<Database["public"]["Tables"]["clients"]["Insert"]>;
         Relationships: [];
@@ -92,6 +94,7 @@ export interface Database {
           site_address: string | null;
           status: ProjectStatus;
           memo: string | null;
+          deleted_at: string | null;
         } & WithTimestamps;
         Insert: {
           id?: string;
@@ -101,6 +104,7 @@ export interface Database {
           site_address?: string | null;
           status?: ProjectStatus;
           memo?: string | null;
+          deleted_at?: string | null;
         } & InsertTimestamps;
         Update: Partial<Database["public"]["Tables"]["projects"]["Insert"]>;
         Relationships: [];
@@ -336,7 +340,25 @@ export interface Database {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      project_overview: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          client_id: string | null;
+          name: string;
+          site_address: string | null;
+          status: ProjectStatus;
+          memo: string | null;
+          created_at: string;
+          updated_at: string;
+          client_name: string | null;
+          contract_amount: number;
+          receivable: number;
+        };
+        Relationships: [];
+      };
+    };
     Functions: Record<string, never>;
     Enums: {
       workspace_plan: WorkspacePlan;
