@@ -24,7 +24,7 @@
 
 ### 2. 견적가 / 실행가 분리로 마진 관리
 
-- `estimates`/`estimate_items` 는 두 가지 가격을 분리해 저장한다.
+- `estimates`/`estimate_lines` 는 두 가지 가격을 분리해 저장한다.
   - **견적가(quote)** = 고객에게 제시하는 금액.
   - **실행가(cost)** = 실제 들어가는 원가.
 - 마진 = 견적가 − 실행가. 마진율은 `calcMargin()`(`src/lib/utils.ts`) 으로 계산한다.
@@ -96,7 +96,11 @@ src/
     auth/          getAuthContext / requireAuth
     validations/   zod 스키마
   types/database.ts  Supabase 타입(수기; 프로덕션은 gen types 권장)
-supabase/migrations/ 0001 스키마+트리거, 0002 RLS
+supabase/
+  migrations/   0001 스키마+enum+트리거, 0002 RLS+권한
+  seed.sql      데모 데이터(거래처2/현장1/품목10/견적1)
+  tests/        RLS 격리 pgTAP 테스트
+  README.md     데이터 모델·RLS 정책 상세
 ```
 
 ## 작업 시 체크리스트

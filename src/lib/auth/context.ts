@@ -30,11 +30,11 @@ export const getAuthContext = cache(async (): Promise<AuthContext | null> => {
 
   const { data: member } = await supabase
     .from("members")
-    .select("workspace_id, role, display_name")
+    .select("workspace_id, role, name")
     .eq("user_id", user.id)
     .order("created_at", { ascending: true })
     .limit(1)
-    .returns<Pick<MemberRow, "workspace_id" | "role" | "display_name">[]>()
+    .returns<Pick<MemberRow, "workspace_id" | "role" | "name">[]>()
     .maybeSingle();
 
   if (!member) return null;
@@ -52,7 +52,7 @@ export const getAuthContext = cache(async (): Promise<AuthContext | null> => {
     workspaceId: member.workspace_id,
     workspaceName: workspace?.name ?? "내 업체",
     role: member.role,
-    displayName: member.display_name,
+    displayName: member.name,
   };
 });
 

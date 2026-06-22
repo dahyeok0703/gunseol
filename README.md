@@ -64,9 +64,44 @@ supabase db push
 
 이 마이그레이션은 다음을 만든다:
 
-- `workspaces`, `members`, `clients`, `sites`, `estimates`, `estimate_items`
+- 업무 테이블: `workspaces`, `members`, `clients`, `projects`, `catalog_items`,
+  `estimates`, `estimate_lines`, `contracts`, `statements`, `payments`, `documents`
+- 마진 보호/감사: `ai_usage`, `audit_logs`, `billing_events`
 - 회원가입 시 **workspace 자동 생성 + owner 등록** 트리거(`handle_new_user`)
-- **`workspace_id` 기반 RLS** 전체 정책
+- **`workspace_id` 기반 RLS** 전체 정책 (역할별 읽기/쓰기 분리)
+
+> 모든 업무 테이블은 `workspace_id` 를 가지며 RLS 로 격리된다.
+> 스키마·정책의 전체 설명은 [`supabase/README.md`](./supabase/README.md) 참고.
+
+### 4-1) 데모 데이터 시드 (로컬, 선택)
+
+로컬 Supabase(`supabase start`)에서 `supabase db reset` 을 실행하면 마이그레이션 적용 후
+`supabase/seed.sql` 이 자동 실행되어 데모 업체/거래처 2/현장 1/품목 10/견적 1 이 채워진다.
+
+```bash
+supabase db reset      # 마이그레이션 + 시드
+# 데모 로그인:  demo@gunseol.app  /  demo1234
+```
+
+### 4-2) RLS 격리 테스트 (선택)
+
+타 workspace 데이터가 새지 않는지 pgTAP 통합 테스트로 검증한다.
+
+```bash
+supabase test db       # supabase/tests/rls_isolation.test.sql 실행
+```
+
+### 4-3) 타입 생성
+
+스키마를 바꾸면 TypeScript 타입을 재생성한다(`src/types/database.ts`).
+
+```bash
+pnpm gen:types         # = supabase gen types typescript --local > src/types/database.ts
+# 원격 프로젝트: supabase gen types typescript --linked > src/types/database.ts
+```
+
+> `supabase db reset/test/gen:types` 는 로컬 Supabase 스택이 필요하다.
+> 처음이라면 `supabase init` → `supabase start` 후 사용한다.
 
 ### 5) (선택) 이메일 인증 설정
 
@@ -97,6 +132,9 @@ http://localhost:3000 접속 → 회원가입하면 업체가 자동 생성되�
 | `pnpm lint` | ESLint |
 | `pnpm typecheck` | 타입 검사 (`tsc --noEmit`) |
 | `pnpm format` | Prettier 포맷 |
+| `pnpm db:reset` | (로컬) 마이그레이션 + 시드 재적용 |
+| `pnpm db:test` | (로컬) RLS 격리 pgTAP 테스트 |
+| `pnpm gen:types` | (로컬) DB → TS 타입 생성 |
 
 ## 프로젝트 구조 & 설계 규칙
 
