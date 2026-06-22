@@ -1,0 +1,186 @@
+@import "tailwindcss";
+
+/* ────────────────────────────────────────────────────────────────────────
+   디자인 토큰 (Design Tokens)
+   무드: 현장감 · 신뢰 · 실용
+   팔레트: 차콜(charcoal) + 모래색 웜 뉴트럴(sand) + 앰버 포인트(amber)
+   모든 값은 HSL 채널(H S% L%)로 저장 → hsl(var(--token)) 으로 사용
+   ──────────────────────────────────────────────────────────────────────── */
+:root {
+  /* 브랜드 원색 (raw brand scales) */
+  --charcoal: 24 10% 16%; /* 짙은 차콜 — 텍스트/주요 면 */
+  --charcoal-soft: 24 8% 28%;
+  --sand: 38 36% 95%; /* 모래색 배경 (웜 뉴트럴) */
+  --sand-card: 40 40% 98%; /* 카드 표면 */
+  --sand-muted: 36 20% 90%;
+  --amber: 35 92% 52%; /* 앰버 포인트 — CTA/강조 */
+  --amber-strong: 32 95% 44%;
+
+  /* 시맨틱 토큰 (shadcn/ui 호환) */
+  --background: var(--sand);
+  --foreground: var(--charcoal);
+
+  --card: var(--sand-card);
+  --card-foreground: var(--charcoal);
+
+  --popover: var(--sand-card);
+  --popover-foreground: var(--charcoal);
+
+  --primary: var(--charcoal);
+  --primary-foreground: 40 40% 98%;
+
+  --secondary: var(--sand-muted);
+  --secondary-foreground: var(--charcoal);
+
+  --muted: var(--sand-muted);
+  --muted-foreground: 28 8% 42%;
+
+  --accent: var(--amber);
+  --accent-foreground: 24 10% 12%;
+
+  --destructive: 0 72% 48%;
+  --destructive-foreground: 40 40% 98%;
+
+  --success: 145 55% 38%;
+  --success-foreground: 40 40% 98%;
+
+  --warning: var(--amber-strong);
+  --warning-foreground: 24 10% 12%;
+
+  --border: 36 18% 84%;
+  --input: 36 18% 84%;
+  --ring: var(--amber);
+
+  /* 마진/금액 강조용 (큼직한 숫자에 사용) */
+  --profit: 145 55% 34%; /* 마진 +  */
+  --loss: 0 72% 48%; /* 마진 −  */
+
+  /* 라운드 — 엄지 친화적 부드러운 모서리 */
+  --radius: 0.85rem;
+
+  /* 안전영역 (노치/홈바) */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+.dark {
+  --background: 24 10% 10%;
+  --foreground: 38 30% 92%;
+
+  --card: 24 9% 14%;
+  --card-foreground: 38 30% 92%;
+
+  --popover: 24 9% 14%;
+  --popover-foreground: 38 30% 92%;
+
+  --primary: 38 30% 92%;
+  --primary-foreground: 24 10% 12%;
+
+  --secondary: 24 8% 20%;
+  --secondary-foreground: 38 30% 92%;
+
+  --muted: 24 8% 20%;
+  --muted-foreground: 36 12% 64%;
+
+  --accent: var(--amber);
+  --accent-foreground: 24 10% 12%;
+
+  --destructive: 0 62% 52%;
+  --destructive-foreground: 38 30% 92%;
+
+  --success: 145 45% 46%;
+  --success-foreground: 24 10% 12%;
+
+  --warning: var(--amber);
+  --warning-foreground: 24 10% 12%;
+
+  --border: 24 8% 24%;
+  --input: 24 8% 24%;
+  --ring: var(--amber);
+
+  --profit: 145 50% 52%;
+  --loss: 0 62% 58%;
+}
+
+/* Tailwind v4 — 토큰을 유틸리티로 노출 */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-profit: hsl(var(--profit));
+  --color-loss: hsl(var(--loss));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-sm: calc(var(--radius) - 0.4rem);
+
+  --font-sans:
+    var(--font-pretendard), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+    /* 모바일 우선: iOS 바운스/오버스크롤 시 배경 유지 */
+    overscroll-behavior-y: none;
+  }
+
+  /* 큼직한 금액 숫자 — 표 형태 정렬을 위해 tabular-nums */
+  .num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer utilities {
+  /* 엄지 친화적 최소 터치 타깃 (44px) */
+  .tap-target {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+
+  .pb-safe {
+    padding-bottom: calc(var(--safe-bottom) + 0.5rem);
+  }
+
+  .pt-safe {
+    padding-top: var(--safe-top);
+  }
+
+  .h-safe-bottom {
+    height: var(--safe-bottom);
+  }
+}
