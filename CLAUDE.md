@@ -101,7 +101,8 @@ src/
   types/database.ts  Supabase 타입(수기; 프로덕션은 gen types 권장)
 supabase/
   migrations/   0001 스키마, 0002 RLS, 0003 거래처/현장(soft delete·감사),
-                0004 단가표(카테고리 시드·즐겨찾기), 0005 견적 RPC(버전·합계)
+                0004 단가표(카테고리 시드·즐겨찾기), 0005 견적 RPC(버전·합계),
+                0006 AI 사용량 RPC(쿼터·토큰 적재)
   seed.sql      데모 데이터(거래처2/현장1/품목10/견적1)
   tests/        RLS 격리 pgTAP 테스트
   README.md     데이터 모델·RLS 정책 상세

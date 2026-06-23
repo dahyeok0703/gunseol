@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Building2, UserRound, Sparkles, LogOut } from "lucide-react";
 import { requireAuth } from "@/lib/auth/context";
+import { createClient } from "@/lib/supabase/server";
 import { features } from "@/lib/env";
 import { signOutAction } from "@/lib/actions/auth";
+import { formatKRW } from "@/lib/utils";
+import { FREE_MONTHLY_EXTRACTIONS } from "@/lib/constants/plan";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/app-shell/page-header";
@@ -12,6 +15,22 @@ export const metadata: Metadata = { title: "설정" };
 export default async function SettingsPage() {
   const ctx = await requireAuth();
   const roleLabel = ctx.role === "owner" ? "대표(owner)" : "직원(staff)";
+
+  // 이번 달 AI 사용량 (owner 만 RLS 로 조회 가능)
+  let usage: { doc_count: number; est_cost_krw: number } | null = null;
+  if (features.aiExtraction && ctx.role === "owner") {
+    const supabase = await createClient();
+    const month = new Date();
+    const monthStr = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}-01`;
+    const { data } = await supabase
+      .from("ai_usage")
+      .select("doc_count, est_cost_krw")
+      .eq("workspace_id", ctx.workspaceId)
+      .eq("month", monthStr)
+      .returns<{ doc_count: number; est_cost_krw: number }[]>()
+      .maybeSingle();
+    usage = data ?? { doc_count: 0, est_cost_krw: 0 };
+  }
 
   return (
     <div className="space-y-6">
@@ -56,6 +75,20 @@ export default async function SettingsPage() {
           >
             {features.aiExtraction ? "사용 가능" : "키 없음"}
           </span>
+
+          {usage ? (
+            <div className="mt-1 flex items-center justify-between border-t border-border pt-3 text-sm">
+              <span className="text-muted-foreground">
+                이번 달 추출{" "}
+                <span className="num font-semibold text-foreground">{usage.doc_count}</span>회
+                <span className="text-muted-foreground">
+                  {" "}
+                  / {FREE_MONTHLY_EXTRACTIONS}회 (free)
+                </span>
+              </span>
+              <span className="num text-muted-foreground">≈ {formatKRW(usage.est_cost_krw)}</span>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 

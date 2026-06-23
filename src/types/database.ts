@@ -389,6 +389,20 @@ export interface Database {
         };
         Returns: Database["public"]["Tables"]["estimates"]["Row"];
       };
+      current_month_extractions: {
+        Args: { p_workspace_id: string };
+        Returns: number;
+      };
+      record_ai_usage: {
+        Args: {
+          p_workspace_id: string;
+          p_input_tokens: number;
+          p_output_tokens: number;
+          p_doc_count: number;
+          p_est_cost_krw: number;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       workspace_plan: WorkspacePlan;

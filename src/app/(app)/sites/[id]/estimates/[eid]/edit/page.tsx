@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { requireAuth } from "@/lib/auth/context";
+import { features } from "@/lib/env";
 import { getCatalogPickerItems } from "@/lib/data/catalog";
 import { getEstimateWithLines } from "@/lib/data/estimates";
 import { PageHeader } from "@/components/app-shell/page-header";
@@ -34,6 +35,7 @@ export default async function EditEstimatePage({
       <EstimateBuilder
         projectId={id}
         catalogItems={catalogItems}
+        aiEnabled={features.aiExtraction}
         initial={{
           status: "draft",
           memo: estimate.memo ?? "",

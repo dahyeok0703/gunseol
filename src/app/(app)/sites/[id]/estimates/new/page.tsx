@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { requireAuth } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
+import { features } from "@/lib/env";
 import { getCatalogPickerItems } from "@/lib/data/catalog";
 import type { Database } from "@/types/database";
 import { PageHeader } from "@/components/app-shell/page-header";
@@ -33,7 +34,7 @@ export default async function NewEstimatePage({ params }: { params: Promise<{ id
   return (
     <div>
       <PageHeader title="새 견적" description={project.name} />
-      <EstimateBuilder projectId={id} catalogItems={catalogItems} />
+      <EstimateBuilder projectId={id} catalogItems={catalogItems} aiEnabled={features.aiExtraction} />
     </div>
   );
 }

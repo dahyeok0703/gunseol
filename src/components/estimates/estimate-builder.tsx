@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { BookOpen, Pencil, Trash2, Info } from "lucide-react";
+import { BookOpen, Pencil, Trash2, Info, Sparkles } from "lucide-react";
 
 import { cn, formatKRW, calcMargin } from "@/lib/utils";
 import { createEstimateAction } from "@/lib/actions/estimates";
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MarginSummary } from "@/components/estimates/margin-summary";
 import { CatalogPickerSheet } from "@/components/estimates/catalog-picker-sheet";
+import { AiExtractSheet, type ExtractedLine } from "@/components/estimates/ai-extract-sheet";
 
 interface LineDraft {
   key: string;
@@ -60,10 +61,12 @@ export function EstimateBuilder({
   projectId,
   catalogItems,
   initial,
+  aiEnabled = false,
 }: {
   projectId: string;
   catalogItems: CatalogPickerItem[];
   initial?: EstimateInitial;
+  aiEnabled?: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -74,6 +77,7 @@ export function EstimateBuilder({
     initial?.lines?.length ? initial.lines.map(toDraft) : [],
   );
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   // 실시간 합계 ★
   const totalPrice = lines.reduce((s, l) => s + num(l.qty) * num(l.unit_price), 0);
@@ -96,6 +100,21 @@ export function EstimateBuilder({
         unit_price: String(it.default_unit_price),
         cost: String(it.default_cost),
       }),
+    ]);
+  }
+  function addFromExtraction(extracted: ExtractedLine[]) {
+    setLines((prev) => [
+      ...prev,
+      ...extracted.map((l) =>
+        toDraft({
+          category: l.category,
+          name: l.name,
+          unit: l.unit,
+          qty: String(l.qty),
+          unit_price: String(l.unit_price),
+          cost: String(l.cost),
+        }),
+      ),
     ]);
   }
 
@@ -170,6 +189,19 @@ export function EstimateBuilder({
         </ul>
       )}
 
+      {/* 사진/메시지로 항목 채우기 (AI 활성 시) */}
+      {aiEnabled ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="w-full border-warning/40 text-warning hover:bg-warning/10 hover:text-warning"
+          onClick={() => setAiOpen(true)}
+        >
+          <Sparkles className="size-4" /> 사진·메시지로 항목 채우기
+        </Button>
+      ) : null}
+
       {/* 라인 추가 */}
       <div className="flex gap-2">
         <Button
@@ -238,6 +270,15 @@ export function EstimateBuilder({
         onPick={addFromCatalog}
         onClose={() => setPickerOpen(false)}
       />
+
+      {aiEnabled ? (
+        <AiExtractSheet
+          open={aiOpen}
+          projectId={projectId}
+          onClose={() => setAiOpen(false)}
+          onAdd={addFromExtraction}
+        />
+      ) : null}
     </div>
   );
 }
