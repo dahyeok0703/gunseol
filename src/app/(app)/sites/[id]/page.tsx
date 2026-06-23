@@ -1,22 +1,15 @@
 import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  Pencil,
-  User,
-  MapPin,
-  StickyNote,
-  FileText,
-  Wallet,
-  Plus,
-  ChevronRight,
-} from "lucide-react";
+import { Pencil, User, MapPin, StickyNote, Plus, ChevronRight } from "lucide-react";
 
 import { requireAuth } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
 import { getProjectEstimates, type Estimate } from "@/lib/data/estimates";
 import { getProjectStatements, type Statement } from "@/lib/data/statements";
 import { getProjectTasks, getProjectPhotoCounts } from "@/lib/data/tasks";
+import { getProjectPayments } from "@/lib/data/payments";
+import { getProjectSettlement } from "@/lib/data/finance";
 import { formatKRW, calcMargin } from "@/lib/utils";
 import type { Database } from "@/types/database";
 import { Button } from "@/components/ui/button";
@@ -30,6 +23,8 @@ import { EntityDeleteButton } from "@/components/entity-delete-button";
 import { PdfActions } from "@/components/documents/pdf-actions";
 import { StatementsSection } from "@/components/documents/statements-section";
 import { ScheduleSection } from "@/components/schedule/schedule-section";
+import { SettlementCard } from "@/components/payments/settlement-card";
+import { PaymentsSection } from "@/components/payments/payments-section";
 
 export const metadata: Metadata = { title: "현장 상세" };
 
@@ -49,12 +44,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   if (!project) notFound();
 
-  const [estimates, statements, tasks, photoCounts] = await Promise.all([
+  const [estimates, statements, tasks, photoCounts, payments, settlement] = await Promise.all([
     getProjectEstimates(id),
     getProjectStatements(id),
     getProjectTasks(id),
     getProjectPhotoCounts(id),
+    getProjectPayments(id),
+    getProjectSettlement(id),
   ]);
+
+  const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`;
 
   return (
     <div className="space-y-5">
@@ -133,11 +132,15 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           />
         </TabsContent>
         <TabsContent value="payment">
-          <TabPlaceholder
-            icon={Wallet}
-            title="수금"
-            description="계약금·중도금·잔금 등 받을 돈을 추적합니다."
-          />
+          <div className="space-y-4">
+            <SettlementCard s={settlement} />
+            <PaymentsSection
+              projectId={id}
+              payments={payments}
+              canEdit={ctx.role === "owner"}
+              today={todayStr}
+            />
+          </div>
         </TabsContent>
       </Tabs>
 
@@ -237,29 +240,6 @@ function DocsTab({
       </section>
 
       <StatementsSection projectId={projectId} statements={statements} />
-    </div>
-  );
-}
-
-function TabPlaceholder({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: typeof FileText;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card/50 px-6 py-12 text-center">
-      <div className="flex size-11 items-center justify-center rounded-full bg-secondary text-muted-foreground">
-        <Icon className="size-5" />
-      </div>
-      <p className="font-semibold">{title}</p>
-      <p className="text-sm text-muted-foreground">{description}</p>
-      <span className="mt-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs text-muted-foreground">
-        다음 단계에서 연결됩니다
-      </span>
     </div>
   );
 }

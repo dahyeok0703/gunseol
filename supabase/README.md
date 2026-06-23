@@ -14,6 +14,7 @@
 | `migrations/0006_ai_usage.sql` | AI 사용량 RPC (`current_month_extractions`/`record_ai_usage`, 멤버십 검증) |
 | `migrations/0007_brand_documents.sql` | 업체 프로필 컬럼 + 브랜드 자산 Storage 버킷/정책(로고·도장) |
 | `migrations/0008_schedule.sql` | 공정 일정(tasks)·현장 사진(task_photos) + `reorder_tasks` RPC + site 버킷 |
+| `migrations/0009_receivables.sql` | 수금(payments) 미수 집계·임박 정렬용 부분 인덱스 |
 | `seed.sql` | 데모 데이터 (`supabase db reset` 시 자동 실행) |
 | `tests/rls_isolation.test.sql` | 타 workspace 격리 pgTAP 통합 테스트 |
 
