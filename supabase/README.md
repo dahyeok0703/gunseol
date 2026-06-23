@@ -12,6 +12,7 @@
 | `migrations/0004_catalog.sql` | 단가표(즐겨찾기·카테고리·기본 카테고리 시드) |
 | `migrations/0005_estimates.sql` | `create_estimate()` RPC (견적+라인 원자적 생성·버전·합계) |
 | `migrations/0006_ai_usage.sql` | AI 사용량 RPC (`current_month_extractions`/`record_ai_usage`, 멤버십 검증) |
+| `migrations/0007_brand_documents.sql` | 업체 프로필 컬럼 + 브랜드 자산 Storage 버킷/정책(로고·도장) |
 | `seed.sql` | 데모 데이터 (`supabase db reset` 시 자동 실행) |
 | `tests/rls_isolation.test.sql` | 타 workspace 격리 pgTAP 통합 테스트 |
 
@@ -53,6 +54,10 @@ auth.users
 - **AI 사용량(마진 보호)**: `record_ai_usage`/`current_month_extractions` security definer RPC 가
   멤버십을 검증한 뒤 `ai_usage` 를 월 단위로 누적한다(`ai_usage` 직접 insert 는 여전히 금지).
   free 플랜은 `current_month_extractions` 로 월 추출 쿼터를 산정한다.
+- **출력물(PDF)**: 업체 프로필(상호·대표·사업자번호·연락처·주소·로고·도장)은 `workspaces` 컬럼.
+  로고·도장 이미지는 `brand` Storage 버킷(`{workspace_id}/...` 경로)에 저장하고
+  workspace 단위 RLS(`storage.objects`)로 격리한다. PDF 는 서버(`@react-pdf/renderer`,
+  Noto Sans KR 임베드)에서 생성한다.
 
 ## RLS 정책 요약
 

@@ -9,7 +9,6 @@ import {
   FileText,
   Calendar,
   Wallet,
-  FileSignature,
   Plus,
   ChevronRight,
 } from "lucide-react";
@@ -17,6 +16,7 @@ import {
 import { requireAuth } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
 import { getProjectEstimates, type Estimate } from "@/lib/data/estimates";
+import { getProjectStatements, type Statement } from "@/lib/data/statements";
 import { formatKRW, calcMargin } from "@/lib/utils";
 import type { Database } from "@/types/database";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,8 @@ import { ProjectStatusBadge } from "@/components/projects/project-status-badge";
 import { StatusChanger } from "@/components/projects/status-changer";
 import { EstimateStatusBadge } from "@/components/estimates/estimate-status-badge";
 import { EntityDeleteButton } from "@/components/entity-delete-button";
+import { PdfActions } from "@/components/documents/pdf-actions";
+import { StatementsSection } from "@/components/documents/statements-section";
 
 export const metadata: Metadata = { title: "현장 상세" };
 
@@ -46,7 +48,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   if (!project) notFound();
 
-  const estimates = await getProjectEstimates(id);
+  const [estimates, statements] = await Promise.all([
+    getProjectEstimates(id),
+    getProjectStatements(id),
+  ]);
 
   return (
     <div className="space-y-5">
@@ -114,11 +119,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <EstimateTab projectId={id} estimates={estimates} />
         </TabsContent>
         <TabsContent value="contract">
-          <TabPlaceholder
-            icon={FileSignature}
-            title="계약·출력물"
-            description="계약서, 거래명세서, 발주서를 만들고 출력합니다."
-          />
+          <DocsTab projectId={id} estimates={estimates} statements={statements} />
         </TabsContent>
         <TabsContent value="schedule">
           <TabPlaceholder icon={Calendar} title="일정" description="공정 일정과 방문 일정을 관리합니다." />
@@ -179,6 +180,55 @@ function EstimateTab({ projectId, estimates }: { projectId: string; estimates: E
           })}
         </ul>
       )}
+    </div>
+  );
+}
+
+function DocsTab({
+  projectId,
+  estimates,
+  statements,
+}: {
+  projectId: string;
+  estimates: Estimate[];
+  statements: Statement[];
+}) {
+  return (
+    <div className="space-y-6">
+      <section className="space-y-3">
+        <h3 className="text-sm font-semibold">견적서 · 계약서</h3>
+        {estimates.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-border bg-card/50 px-4 py-6 text-center text-sm text-muted-foreground">
+            견적을 작성하면 견적서·계약서를 PDF로 출력할 수 있어요.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {estimates.map((e) => (
+              <li key={e.id}>
+                <Card className="space-y-2 p-3">
+                  <div className="flex items-center gap-2">
+                    <span className="num text-sm font-semibold">견적 v{e.version}</span>
+                    <EstimateStatusBadge status={e.status} />
+                    <span className="num ml-auto text-sm font-bold">
+                      {formatKRW(e.total_price)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-border pt-2">
+                    <span className="text-xs text-muted-foreground">견적서</span>
+                    <PdfActions url={`/api/pdf/estimate/${e.id}`} title={`견적서 v${e.version}`} />
+                  </div>
+                  <div className="flex items-center justify-between border-t border-border pt-2">
+                    <span className="text-xs text-muted-foreground">계약서 (법무 검토 필요)</span>
+                    <PdfActions url={`/api/pdf/contract/${e.id}`} title={`계약서 v${e.version}`} />
+                  </div>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <StatementsSection projectId={projectId} statements={statements} />
     </div>
   );
 }

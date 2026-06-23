@@ -88,6 +88,8 @@ src/
     (auth)/        로그인·회원가입·비번재설정 (공개)
     (app)/         보호 라우트 셸(상단바+하단 탭바) + 기능 페이지
     auth/callback/ 이메일 확인·재설정 코드 교환
+    api/extract/   AI 항목 추출 라우트
+    api/pdf/       견적서·계약서·발주/명세 PDF 라우트(@react-pdf/renderer)
   components/
     ui/            shadcn 프리미티브
     auth/          인증 폼(client)
@@ -97,12 +99,18 @@ src/
     supabase/      client/server/middleware
     actions/       safe-action 래퍼 + auth actions
     auth/          getAuthContext / requireAuth
+    data/          server 데이터 접근자(catalog/estimates/statements/workspace)
+    ai/            AI 추출(Haiku→Sonnet 폴백)
+    pdf/           PDF 문서 템플릿 + 한글 폰트(NotoKR) 임베드
+    pricing/       AI 원가(cogs)
     validations/   zod 스키마
   types/database.ts  Supabase 타입(수기; 프로덕션은 gen types 권장)
+public/fonts/      Noto Sans KR OTF (OFL) — PDF 임베드용
+※ 계약서 표준 문구는 예시 플레이스홀더이며 반드시 법무 검토 필요(contract-document.tsx)
 supabase/
   migrations/   0001 스키마, 0002 RLS, 0003 거래처/현장(soft delete·감사),
                 0004 단가표(카테고리 시드·즐겨찾기), 0005 견적 RPC(버전·합계),
-                0006 AI 사용량 RPC(쿼터·토큰 적재)
+                0006 AI 사용량 RPC(쿼터·토큰 적재), 0007 업체 프로필+브랜드 Storage
   seed.sql      데모 데이터(거래처2/현장1/품목10/견적1)
   tests/        RLS 격리 pgTAP 테스트
   README.md     데이터 모델·RLS 정책 상세

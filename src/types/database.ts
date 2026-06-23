@@ -31,6 +31,13 @@ export interface Database {
           trial_ends_at: string;
           billing_customer_id: string | null;
           owner_id: string;
+          biz_name: string | null;
+          biz_owner: string | null;
+          biz_reg_no: string | null;
+          biz_phone: string | null;
+          biz_address: string | null;
+          logo_path: string | null;
+          stamp_path: string | null;
         } & WithTimestamps;
         Insert: {
           id?: string;
@@ -39,6 +46,13 @@ export interface Database {
           trial_ends_at?: string;
           billing_customer_id?: string | null;
           owner_id: string;
+          biz_name?: string | null;
+          biz_owner?: string | null;
+          biz_reg_no?: string | null;
+          biz_phone?: string | null;
+          biz_address?: string | null;
+          logo_path?: string | null;
+          stamp_path?: string | null;
         } & InsertTimestamps;
         Update: Partial<Database["public"]["Tables"]["workspaces"]["Insert"]>;
         Relationships: [];
