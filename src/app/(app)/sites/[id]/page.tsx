@@ -7,7 +7,6 @@ import {
   MapPin,
   StickyNote,
   FileText,
-  Calendar,
   Wallet,
   Plus,
   ChevronRight,
@@ -17,6 +16,7 @@ import { requireAuth } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
 import { getProjectEstimates, type Estimate } from "@/lib/data/estimates";
 import { getProjectStatements, type Statement } from "@/lib/data/statements";
+import { getProjectTasks, getProjectPhotoCounts } from "@/lib/data/tasks";
 import { formatKRW, calcMargin } from "@/lib/utils";
 import type { Database } from "@/types/database";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ import { EstimateStatusBadge } from "@/components/estimates/estimate-status-badg
 import { EntityDeleteButton } from "@/components/entity-delete-button";
 import { PdfActions } from "@/components/documents/pdf-actions";
 import { StatementsSection } from "@/components/documents/statements-section";
+import { ScheduleSection } from "@/components/schedule/schedule-section";
 
 export const metadata: Metadata = { title: "현장 상세" };
 
@@ -36,7 +37,7 @@ type ProjectOverview = Database["public"]["Views"]["project_overview"]["Row"];
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  await requireAuth();
+  const ctx = await requireAuth();
   const supabase = await createClient();
 
   const { data: project } = await supabase
@@ -48,9 +49,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   if (!project) notFound();
 
-  const [estimates, statements] = await Promise.all([
+  const [estimates, statements, tasks, photoCounts] = await Promise.all([
     getProjectEstimates(id),
     getProjectStatements(id),
+    getProjectTasks(id),
+    getProjectPhotoCounts(id),
   ]);
 
   return (
@@ -122,7 +125,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <DocsTab projectId={id} estimates={estimates} statements={statements} />
         </TabsContent>
         <TabsContent value="schedule">
-          <TabPlaceholder icon={Calendar} title="일정" description="공정 일정과 방문 일정을 관리합니다." />
+          <ScheduleSection
+            projectId={id}
+            workspaceId={ctx.workspaceId}
+            tasks={tasks}
+            photoCounts={photoCounts}
+          />
         </TabsContent>
         <TabsContent value="payment">
           <TabPlaceholder

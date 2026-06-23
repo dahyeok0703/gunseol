@@ -13,6 +13,7 @@
 | `migrations/0005_estimates.sql` | `create_estimate()` RPC (견적+라인 원자적 생성·버전·합계) |
 | `migrations/0006_ai_usage.sql` | AI 사용량 RPC (`current_month_extractions`/`record_ai_usage`, 멤버십 검증) |
 | `migrations/0007_brand_documents.sql` | 업체 프로필 컬럼 + 브랜드 자산 Storage 버킷/정책(로고·도장) |
+| `migrations/0008_schedule.sql` | 공정 일정(tasks)·현장 사진(task_photos) + `reorder_tasks` RPC + site 버킷 |
 | `seed.sql` | 데모 데이터 (`supabase db reset` 시 자동 실행) |
 | `tests/rls_isolation.test.sql` | 타 workspace 격리 pgTAP 통합 테스트 |
 
@@ -29,7 +30,9 @@ auth.users
         │     ├─ contracts (계약)
         │     ├─ statements (거래명세/발주)
         │     ├─ payments (수금/기성)  ── 미수금 추적
-        │     └─ documents (업로드 자료)
+        │     ├─ documents (업로드 자료)
+        │     └─ tasks (공정 일정)  ── 체크리스트·예정일·순서
+        │            └─ task_photos (현장 사진, site 버킷)
         ├─ catalog_categories (공정 카테고리)  ── 가입 시 기본값 시드
         ├─ catalog_items (나만의 단가표)       ── is_favorite, soft delete
         ├─ ai_usage (AI 사용량 집계)         ── 마진 보호

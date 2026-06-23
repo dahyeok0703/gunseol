@@ -373,6 +373,54 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["billing_events"]["Insert"]>;
         Relationships: [];
       };
+      tasks: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          project_id: string;
+          name: string;
+          due_on: string | null;
+          done: boolean;
+          done_at: string | null;
+          sort_order: number;
+          memo: string | null;
+        } & WithTimestamps;
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          project_id: string;
+          name: string;
+          due_on?: string | null;
+          done?: boolean;
+          done_at?: string | null;
+          sort_order?: number;
+          memo?: string | null;
+        } & InsertTimestamps;
+        Update: Partial<Database["public"]["Tables"]["tasks"]["Insert"]>;
+        Relationships: [];
+      };
+      task_photos: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          task_id: string;
+          project_id: string;
+          file_path: string;
+          caption: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          task_id: string;
+          project_id: string;
+          file_path: string;
+          caption?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["task_photos"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: {
       project_overview: {
@@ -415,6 +463,10 @@ export interface Database {
           p_doc_count: number;
           p_est_cost_krw: number;
         };
+        Returns: undefined;
+      };
+      reorder_tasks: {
+        Args: { p_ids: string[] };
         Returns: undefined;
       };
     };
