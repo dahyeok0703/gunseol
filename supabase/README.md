@@ -8,6 +8,9 @@
 | --- | --- |
 | `migrations/0001_init.sql` | 전체 스키마 + enum + updated_at 트리거 + 가입 트리거 |
 | `migrations/0002_rls.sql` | RLS 헬퍼 함수 + 정책 + 권한(GRANT) |
+| `migrations/0003_clients_projects.sql` | soft delete + 변경 감사 트리거 + project_overview 뷰 |
+| `migrations/0004_catalog.sql` | 단가표(즐겨찾기·카테고리·기본 카테고리 시드) |
+| `migrations/0005_estimates.sql` | `create_estimate()` RPC (견적+라인 원자적 생성·버전·합계) |
 | `seed.sql` | 데모 데이터 (`supabase db reset` 시 자동 실행) |
 | `tests/rls_isolation.test.sql` | 타 workspace 격리 pgTAP 통합 테스트 |
 
@@ -42,6 +45,10 @@ auth.users
   자동완성/선택 소스(`src/lib/data/catalog.ts`)로 쓰인다.
 - **변경 감사**: clients/projects/catalog_items 의 INSERT/UPDATE/DELETE 가
   `audit_changes` 트리거로 `audit_logs` 에 자동 기록된다(soft delete·상태변경 구분).
+- **견적 생성**: `create_estimate(project_id, status, memo, lines jsonb)` RPC 가
+  견적+라인을 원자적으로 만든다. 버전은 자동 증가(수정=새 버전), 합계(견적가/실행가)는
+  **서버에서 라인으로 재계산**한다. security invoker 라 비멤버는 RLS 로 차단된다.
+  ⚠️ 금액의 최종 확인·책임은 업체에 있으며, 도구는 단순 합산만 한다.
 
 ## RLS 정책 요약
 

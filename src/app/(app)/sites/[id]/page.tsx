@@ -1,11 +1,23 @@
 import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, User, MapPin, StickyNote, FileText, Calendar, Wallet, FileSignature } from "lucide-react";
+import {
+  Pencil,
+  User,
+  MapPin,
+  StickyNote,
+  FileText,
+  Calendar,
+  Wallet,
+  FileSignature,
+  Plus,
+  ChevronRight,
+} from "lucide-react";
 
 import { requireAuth } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
-import { formatKRW } from "@/lib/utils";
+import { getProjectEstimates, type Estimate } from "@/lib/data/estimates";
+import { formatKRW, calcMargin } from "@/lib/utils";
 import type { Database } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { ProjectStatusBadge } from "@/components/projects/project-status-badge";
 import { StatusChanger } from "@/components/projects/status-changer";
+import { EstimateStatusBadge } from "@/components/estimates/estimate-status-badge";
 import { EntityDeleteButton } from "@/components/entity-delete-button";
 
 export const metadata: Metadata = { title: "현장 상세" };
@@ -32,6 +45,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     .maybeSingle();
 
   if (!project) notFound();
+
+  const estimates = await getProjectEstimates(id);
 
   return (
     <div className="space-y-5">
@@ -96,7 +111,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <TabsTrigger value="payment">수금</TabsTrigger>
         </TabsList>
         <TabsContent value="estimate">
-          <TabPlaceholder icon={FileText} title="견적" description="이 현장의 견적을 작성·관리합니다." />
+          <EstimateTab projectId={id} estimates={estimates} />
         </TabsContent>
         <TabsContent value="contract">
           <TabPlaceholder
@@ -120,6 +135,50 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       <div className="pt-2">
         <EntityDeleteButton kind="project" id={id} redirectTo="/sites" label="현장" />
       </div>
+    </div>
+  );
+}
+
+function EstimateTab({ projectId, estimates }: { projectId: string; estimates: Estimate[] }) {
+  return (
+    <div className="space-y-3">
+      <Button asChild variant="accent" size="touch" className="w-full">
+        <Link href={`/sites/${projectId}/estimates/new`}>
+          <Plus className="size-4" /> 새 견적 작성
+        </Link>
+      </Button>
+
+      {estimates.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-border bg-card/50 px-4 py-8 text-center text-sm text-muted-foreground">
+          아직 견적이 없어요. 단가표에서 품목을 골라 빠르게 작성해보세요.
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {estimates.map((e) => {
+            const { margin, rate } = calcMargin(e.total_price, e.total_cost);
+            const loss = margin < 0;
+            return (
+              <li key={e.id}>
+                <Link href={`/sites/${projectId}/estimates/${e.id}`} className="block">
+                  <Card className="flex items-center gap-3 p-3 transition-colors active:bg-secondary/50">
+                    <span className="num text-sm font-semibold text-muted-foreground">
+                      v{e.version}
+                    </span>
+                    <EstimateStatusBadge status={e.status} />
+                    <span className="num ml-auto text-sm font-bold">
+                      {formatKRW(e.total_price)}
+                    </span>
+                    <span className={`num text-xs font-semibold ${loss ? "text-loss" : "text-profit"}`}>
+                      {rate}%
+                    </span>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                  </Card>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

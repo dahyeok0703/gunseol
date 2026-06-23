@@ -379,7 +379,17 @@ export interface Database {
         Relationships: [];
       };
     };
-    Functions: Record<string, never>;
+    Functions: {
+      create_estimate: {
+        Args: {
+          p_project_id: string;
+          p_status: string;
+          p_memo: string;
+          p_lines: Json;
+        };
+        Returns: Database["public"]["Tables"]["estimates"]["Row"];
+      };
+    };
     Enums: {
       workspace_plan: WorkspacePlan;
       member_role: MemberRole;
