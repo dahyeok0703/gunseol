@@ -10,7 +10,16 @@ const PUBLIC_PATHS = [
   "/update-password",
   "/auth",
   "/pricing",
+  "/terms",
+  "/privacy",
+  "/refund",
   "/api/webhooks",
+  "/api/cron",
+  // SEO / 메타데이터 라우트
+  "/opengraph-image",
+  "/twitter-image",
+  "/sitemap.xml",
+  "/robots.txt",
 ];
 
 function isPublic(pathname: string) {

@@ -4,7 +4,7 @@
 
 견적가/실행가를 분리해 **마진을 한눈에**, 현장은 **카드형 목록**, 버튼은 **엄지로 누르기 좋게**.
 
-> 현재 상태: **프로덕션 골격(scaffold)** — 인증·멀티테넌시·앱 셸·디자인 시스템까지 완성, 업무 기능은 빈 화면.
+> 현재 상태: **출시 준비 완료** — 인증·멀티테넌시·견적·AI 추출·PDF 출력·현장 일정·수금/수익성·구독 결제·공개 페이지까지 구현. 출시 전 점검은 [`LAUNCH.md`](./LAUNCH.md) 참고.
 
 ## 스택
 
@@ -13,6 +13,34 @@
 - **Tailwind CSS v4** + **shadcn/ui**(new-york), lucide-react
 - **react-hook-form** + **zod**, **sonner**(토스트)
 - 패키지 매니저: **pnpm**
+
+## ⚡ 5분 셋업
+
+처음부터 배포까지 가장 빠른 길. (상세 옵션·기능별 키는 아래 [빠른 시작](#빠른-시작) 참고)
+
+```bash
+# 0) 의존성
+pnpm install
+
+# 1) Supabase — 프로젝트 1개 생성 후 마이그레이션 적용
+#    (Supabase 대시보드 SQL 에디터에 0001~0010 순서대로 실행하거나, CLI 사용)
+supabase db push          # supabase/migrations/0001~0010
+
+# 2) 키 3종 — .env.local 에 최소 3개만 있으면 앱이 뜬다
+cp .env.example .env.local
+#   NEXT_PUBLIC_SUPABASE_URL=...        (Supabase > Settings > API)
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY=...   (동일)
+#   NEXT_PUBLIC_SITE_URL=http://localhost:3000   (배포 시 실도메인)
+
+# 3) 로컬 실행
+pnpm dev                  # http://localhost:3000
+
+# 4) 배포 — Vercel 에 연결하고 위 3종 환경변수 등록 → push 하면 자동 배포
+```
+
+> **AI·결제·연체 크론**은 키가 없으면 **자동으로 "준비 중"/비활성** 되고 앱은 정상 동작한다.
+> 필요할 때 `ANTHROPIC_API_KEY`(AI), `PORTONE_*`+`SUPABASE_SERVICE_ROLE_KEY`(결제),
+> `CRON_SECRET`(연체 알림)을 추가하면 해당 기능이 켜진다.
 
 ## 빠른 시작
 
@@ -47,6 +75,7 @@ cp .env.example .env.local
 | `PORTONE_WEBHOOK_SECRET` | 선택 | 결제 웹훅 서명 검증(`whsec_` 포함). 무결성·멱등 처리에 사용 |
 | `NEXT_PUBLIC_PORTONE_STORE_ID` | 선택 | 브라우저 SDK(빌링키 발급)용 공개 식별자 |
 | `NEXT_PUBLIC_PORTONE_CHANNEL_KEY` | 선택 | 브라우저 SDK 채널 키 |
+| `CRON_SECRET` | 선택 | 연체 알림 크론(`/api/cron/overdue`) 인증용. Vercel Cron 이 자동 주입 |
 
 > 결제 활성화에는 `PORTONE_API_SECRET` 과 `SUPABASE_SERVICE_ROLE_KEY` 가 함께 필요하다(구독 쓰기는 서비스 역할로만).
 >

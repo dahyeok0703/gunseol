@@ -18,6 +18,8 @@ const serverSchema = z.object({
   PORTONE_WEBHOOK_SECRET: z.string().optional(),
   NEXT_PUBLIC_PORTONE_STORE_ID: z.string().optional(),
   NEXT_PUBLIC_PORTONE_CHANNEL_KEY: z.string().optional(),
+  // 크론(연체 알림 등) 호출 인증용 시크릿 — 없으면 크론 라우트 비활성
+  CRON_SECRET: z.string().optional(),
 });
 
 const clientSchema = z.object({
@@ -46,6 +48,7 @@ function loadEnv() {
     PORTONE_WEBHOOK_SECRET: process.env.PORTONE_WEBHOOK_SECRET,
     NEXT_PUBLIC_PORTONE_STORE_ID: process.env.NEXT_PUBLIC_PORTONE_STORE_ID,
     NEXT_PUBLIC_PORTONE_CHANNEL_KEY: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY,
+    CRON_SECRET: process.env.CRON_SECRET,
   };
 
   const schema = isServer ? serverSchema : clientSchema;
@@ -70,5 +73,9 @@ export const features = {
   /** 구독 결제: PortOne 시크릿 + 서비스 롤(구독/이력 쓰기)이 모두 있어야 활성 */
   billing: isServer
     ? Boolean(process.env.PORTONE_API_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY)
+    : false,
+  /** 크론(연체 알림 등): 시크릿 + 서비스 롤이 있어야 활성 */
+  cron: isServer
+    ? Boolean(process.env.CRON_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY)
     : false,
 } as const;
