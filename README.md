@@ -4,7 +4,19 @@
 
 견적가/실행가를 분리해 **마진을 한눈에**, 현장은 **카드형 목록**, 버튼은 **엄지로 누르기 좋게**.
 
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/dahyeok0703/gunseol/tree/claude/intelligent-feynman-wxyfom)
+
 > 현재 상태: **출시 준비 완료** — 인증·멀티테넌시·견적·AI 추출·PDF 출력·현장 일정·수금/수익성·구독 결제·공개 페이지까지 구현. 출시 전 점검은 [`LAUNCH.md`](./LAUNCH.md) 참고.
+
+## 🌐 StackBlitz 에서 미리보기
+
+위 **Open in StackBlitz** 배지를 누르면 설치 없이 브라우저에서 바로 띄울 수 있다.
+(`pnpm dev` 자동 실행 — `.env.development` 의 데모 기본값으로 부팅된다.)
+
+- ✅ **랜딩·요금제·약관/개인정보/환불 등 공개 페이지 UI** 미리보기 가능
+- ⚠️ 로그인·데이터·결제 등 **백엔드 기능은 동작하지 않는다** — 실제로 쓰려면
+  `.env.local` 에 진짜 Supabase 키를 넣어야 한다(아래 [5분 셋업](#-5분-셋업)).
+- 데모 기본값은 `.env.development` 에 있고, `.env.local` 이 항상 이를 덮어쓴다.
 
 ## 스택
 
