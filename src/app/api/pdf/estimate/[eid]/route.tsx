@@ -4,7 +4,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { getAuthContext } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
 import { getEstimateWithLines } from "@/lib/data/estimates";
-import { getPdfCompany } from "@/lib/data/workspace";
+import { getPdfCompany, getWorkspacePlan } from "@/lib/data/workspace";
 import { registerPdfFonts } from "@/lib/pdf/fonts";
 import { QuoteDocument } from "@/lib/pdf/quote-document";
 import { pdfResponse } from "@/lib/pdf/http";
@@ -36,11 +36,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     project = p ?? null;
   }
 
-  const company = await getPdfCompany(ctx.workspaceId);
+  const [company, plan] = await Promise.all([
+    getPdfCompany(ctx.workspaceId),
+    getWorkspacePlan(ctx.workspaceId),
+  ]);
   registerPdfFonts();
 
   const buffer = await renderToBuffer(
     <QuoteDocument
+      watermark={plan !== "pro"}
       company={company}
       clientName={project?.client_name ?? null}
       projectName={project?.name ?? "현장"}

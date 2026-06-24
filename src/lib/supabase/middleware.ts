@@ -3,7 +3,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import type { Database } from "@/types/database";
 
-const PUBLIC_PATHS = ["/login", "/signup", "/reset-password", "/update-password", "/auth"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/signup",
+  "/reset-password",
+  "/update-password",
+  "/auth",
+  "/pricing",
+  "/api/webhooks",
+];
 
 function isPublic(pathname: string) {
   if (pathname === "/") return true;

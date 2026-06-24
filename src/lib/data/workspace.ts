@@ -17,6 +17,20 @@ type CompanyRow = Pick<
 
 const COLUMNS = "name, biz_name, biz_owner, biz_reg_no, biz_phone, biz_address, logo_path, stamp_path";
 
+/** 출력물 워터마크 판단용 plan 조회 */
+export async function getWorkspacePlan(
+  workspaceId: string,
+): Promise<Database["public"]["Enums"]["workspace_plan"]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("workspaces")
+    .select("plan")
+    .eq("id", workspaceId)
+    .returns<{ plan: Database["public"]["Enums"]["workspace_plan"] }[]>()
+    .maybeSingle();
+  return data?.plan ?? "free";
+}
+
 export async function getCompanyRow(workspaceId: string): Promise<CompanyRow | null> {
   const supabase = await createClient();
   const { data } = await supabase

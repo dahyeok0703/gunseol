@@ -126,6 +126,29 @@ export const styles = StyleSheet.create({
   },
 });
 
+/** 무료 플랜 출력물 워터마크 (Pro 는 표시 안 함) */
+export function Watermark({ show, text = "건설 · 무료 플랜" }: { show: boolean; text?: string }) {
+  if (!show) return null;
+  return (
+    <Text
+      fixed
+      style={{
+        position: "absolute",
+        top: "44%",
+        left: 0,
+        right: 0,
+        textAlign: "center",
+        fontSize: 56,
+        fontWeight: "bold",
+        color: "#0000000c",
+        transform: "rotate(-22deg)",
+      }}
+    >
+      {text}
+    </Text>
+  );
+}
+
 export function DocHeader({ company }: { company: PdfCompany }) {
   const title = company.bizName || company.name;
   const lines = [

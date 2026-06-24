@@ -13,12 +13,19 @@ const serverSchema = z.object({
   // 선택값: 없으면 관련 기능이 우아하게 비활성화된다.
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
+  // 결제(PortOne) — 없으면 결제 '준비중'으로 비활성
+  PORTONE_API_SECRET: z.string().optional(),
+  PORTONE_WEBHOOK_SECRET: z.string().optional(),
+  NEXT_PUBLIC_PORTONE_STORE_ID: z.string().optional(),
+  NEXT_PUBLIC_PORTONE_CHANNEL_KEY: z.string().optional(),
 });
 
 const clientSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
+  NEXT_PUBLIC_PORTONE_STORE_ID: z.string().optional(),
+  NEXT_PUBLIC_PORTONE_CHANNEL_KEY: z.string().optional(),
 });
 
 const isServer = typeof window === "undefined";
@@ -35,6 +42,10 @@ function loadEnv() {
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    PORTONE_API_SECRET: process.env.PORTONE_API_SECRET,
+    PORTONE_WEBHOOK_SECRET: process.env.PORTONE_WEBHOOK_SECRET,
+    NEXT_PUBLIC_PORTONE_STORE_ID: process.env.NEXT_PUBLIC_PORTONE_STORE_ID,
+    NEXT_PUBLIC_PORTONE_CHANNEL_KEY: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY,
   };
 
   const schema = isServer ? serverSchema : clientSchema;
@@ -56,4 +67,8 @@ export const features = {
   aiExtraction: isServer ? Boolean(process.env.ANTHROPIC_API_KEY) : false,
   /** 서비스 롤 키가 있어야 가능한 관리 작업 */
   adminTasks: isServer ? Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) : false,
+  /** 구독 결제: PortOne 시크릿 + 서비스 롤(구독/이력 쓰기)이 모두 있어야 활성 */
+  billing: isServer
+    ? Boolean(process.env.PORTONE_API_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY)
+    : false,
 } as const;

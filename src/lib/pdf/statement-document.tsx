@@ -8,6 +8,7 @@ import {
   DocFooter,
   MetaRow,
   SignatureBlock,
+  Watermark,
   type PdfCompany,
 } from "@/lib/pdf/shared";
 import type { Database } from "@/types/database";
@@ -24,10 +25,12 @@ export function StatementDocument({
   company,
   statement,
   projectName,
+  watermark = false,
 }: {
   company: PdfCompany;
   statement: Statement;
   projectName: string | null;
+  watermark?: boolean;
 }) {
   const isPO = statement.type === "purchase_order";
   const title = isPO ? "발 주 서" : "거 래 명 세 서";
@@ -37,6 +40,7 @@ export function StatementDocument({
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        <Watermark show={watermark} />
         <DocHeader company={company} />
         <Text style={styles.title}>{title}</Text>
 

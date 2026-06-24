@@ -7,7 +7,8 @@ import { features } from "@/lib/env";
 import { getCatalogPickerItems, type CatalogPickerItem } from "@/lib/data/catalog";
 import { extractLines, type ImageMediaType } from "@/lib/ai/extract";
 import { estimateCostKrw } from "@/lib/pricing/cogs";
-import { FREE_MONTHLY_EXTRACTIONS } from "@/lib/constants/plan";
+import { planLimits } from "@/lib/constants/plan";
+import type { WorkspacePlan } from "@/types/database";
 
 /**
  * POST /api/extract — 사진/메모/텍스트에서 견적 항목 추출.
@@ -76,28 +77,31 @@ export async function POST(request: NextRequest) {
 
   const supabase = await createClient();
 
-  // free 플랜 월 쿼터
+  // 플랜별 월 추출 쿼터 (마진 보호)
   const { data: workspace } = await supabase
     .from("workspaces")
     .select("plan")
     .eq("id", ctx.workspaceId)
-    .returns<{ plan: "free" | "pro" }[]>()
+    .returns<{ plan: WorkspacePlan }[]>()
     .maybeSingle();
+  const plan = workspace?.plan ?? "free";
+  const limit = planLimits(plan).aiExtractions;
 
-  if (workspace?.plan === "free") {
-    const { data: used } = await supabase.rpc("current_month_extractions", {
-      p_workspace_id: ctx.workspaceId,
-    });
-    if ((used ?? 0) >= FREE_MONTHLY_EXTRACTIONS) {
-      return NextResponse.json(
-        {
-          ok: false,
-          code: "quota_exceeded",
-          error: `이번 달 무료 AI 추출(${FREE_MONTHLY_EXTRACTIONS}회)을 모두 사용했어요. 수동 입력을 쓰거나 Pro 로 업그레이드하세요.`,
-        },
-        { status: 402 },
-      );
-    }
+  const { data: used } = await supabase.rpc("current_month_extractions", {
+    p_workspace_id: ctx.workspaceId,
+  });
+  if ((used ?? 0) >= limit) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: "quota_exceeded",
+        error:
+          plan === "free"
+            ? `이번 달 무료 AI 추출(${limit}회)을 모두 사용했어요. 수동 입력을 쓰거나 Pro 로 업그레이드하세요.`
+            : `이번 달 AI 추출 한도(${limit}회)에 도달했어요.`,
+      },
+      { status: 402 },
+    );
   }
 
   // 추출 + 단가표 매칭 (병렬)

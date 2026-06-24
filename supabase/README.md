@@ -15,6 +15,7 @@
 | `migrations/0007_brand_documents.sql` | 업체 프로필 컬럼 + 브랜드 자산 Storage 버킷/정책(로고·도장) |
 | `migrations/0008_schedule.sql` | 공정 일정(tasks)·현장 사진(task_photos) + `reorder_tasks` RPC + site 버킷 |
 | `migrations/0009_receivables.sql` | 수금(payments) 미수 집계·임박 정렬용 부분 인덱스 |
+| `migrations/0010_billing.sql` | 구독(subscriptions·빌링키 민감)·결제내역(billing_payments) + billing_events 멱등(event_id unique). owner SELECT만, 쓰기는 서비스 역할 |
 | `seed.sql` | 데모 데이터 (`supabase db reset` 시 자동 실행) |
 | `tests/rls_isolation.test.sql` | 타 workspace 격리 pgTAP 통합 테스트 |
 
@@ -37,8 +38,10 @@ auth.users
         ├─ catalog_categories (공정 카테고리)  ── 가입 시 기본값 시드
         ├─ catalog_items (나만의 단가표)       ── is_favorite, soft delete
         ├─ ai_usage (AI 사용량 집계)         ── 마진 보호
+        ├─ subscriptions (구독, 1:1)         ── 빌링키(민감)·상태·다음 결제일
+        ├─ billing_payments (결제 내역)       ── 정기결제 성공/실패 이력
         ├─ audit_logs (감사 로그)
-        └─ billing_events (결제 웹훅 원본)
+        └─ billing_events (결제 웹훅 원본)    ── event_id 멱등
 ```
 
 - **모든 업무 테이블은 `workspace_id`** 를 가진다. 공통 컬럼: `id uuid`, `created_at`, `updated_at`
@@ -62,6 +65,11 @@ auth.users
   로고·도장 이미지는 `brand` Storage 버킷(`{workspace_id}/...` 경로)에 저장하고
   workspace 단위 RLS(`storage.objects`)로 격리한다. PDF 는 서버(`@react-pdf/renderer`,
   Noto Sans KR 임베드)에서 생성한다.
+- **구독 결제**: `subscriptions`(빌링키 등 민감값 보관)·`billing_payments` 는 owner SELECT 만
+  허용하고 **쓰기 정책은 없다** — 결제 처리는 PortOne 어댑터를 통해 서비스 역할(RLS 우회)로만
+  기록한다. 웹훅(`/api/webhooks/portone`)은 서명 검증 후 `billing_events.event_id` UNIQUE 로
+  **멱등** 처리한다(중복 이벤트는 23505 → 200). 가격은 설정값(`PRO_PRICE_KRW`), plan 한도는
+  `PLAN_LIMITS`(`src/lib/constants/plan.ts`). PORTONE 키가 없으면 결제는 "준비 중"으로 비활성.
 
 ## RLS 정책 요약
 

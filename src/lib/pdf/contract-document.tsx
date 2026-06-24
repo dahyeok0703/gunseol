@@ -8,6 +8,7 @@ import {
   DocFooter,
   MetaRow,
   SignatureBlock,
+  Watermark,
   type PdfCompany,
 } from "@/lib/pdf/shared";
 
@@ -29,6 +30,7 @@ export function ContractDocument({
   siteAddress,
   amount,
   createdAt,
+  watermark = false,
 }: {
   company: PdfCompany;
   clientName: string | null;
@@ -36,10 +38,12 @@ export function ContractDocument({
   siteAddress: string | null;
   amount: number;
   createdAt: string;
+  watermark?: boolean;
 }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        <Watermark show={watermark} />
         <DocHeader company={company} />
         <Text style={styles.title}>공 사 계 약 서</Text>
 

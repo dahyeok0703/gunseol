@@ -16,6 +16,7 @@ export type ProjectStatus = "estimating" | "contracted" | "in_progress" | "done"
 export type EstimateStatus = "draft" | "sent" | "accepted" | "rejected";
 export type StatementType = "purchase_order" | "trade_statement";
 export type PaymentStatus = "pending" | "paid";
+export type SubscriptionStatus = "inactive" | "active" | "canceled" | "past_due";
 
 type WithTimestamps = { created_at: string; updated_at: string };
 type InsertTimestamps = { created_at?: string; updated_at?: string };
@@ -358,19 +359,73 @@ export interface Database {
       billing_events: {
         Row: {
           id: string;
-          workspace_id: string;
+          workspace_id: string | null;
           type: string;
+          raw: Json;
+          event_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id?: string | null;
+          type: string;
+          raw?: Json;
+          event_id?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["billing_events"]["Insert"]>;
+        Relationships: [];
+      };
+      subscriptions: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          status: SubscriptionStatus;
+          billing_key: string | null;
+          customer_key: string | null;
+          card_brand: string | null;
+          card_last4: string | null;
+          current_period_end: string | null;
+          cancel_at_period_end: boolean;
+          last_payment_at: string | null;
+        } & WithTimestamps;
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          status?: SubscriptionStatus;
+          billing_key?: string | null;
+          customer_key?: string | null;
+          card_brand?: string | null;
+          card_last4?: string | null;
+          current_period_end?: string | null;
+          cancel_at_period_end?: boolean;
+          last_payment_at?: string | null;
+        } & InsertTimestamps;
+        Update: Partial<Database["public"]["Tables"]["subscriptions"]["Insert"]>;
+        Relationships: [];
+      };
+      billing_payments: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          provider_payment_id: string | null;
+          amount: number;
+          status: string;
+          paid_at: string | null;
           raw: Json;
           created_at: string;
         };
         Insert: {
           id?: string;
           workspace_id: string;
-          type: string;
+          provider_payment_id?: string | null;
+          amount?: number;
+          status: string;
+          paid_at?: string | null;
           raw?: Json;
           created_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["billing_events"]["Insert"]>;
+        Update: Partial<Database["public"]["Tables"]["billing_payments"]["Insert"]>;
         Relationships: [];
       };
       tasks: {
@@ -478,6 +533,7 @@ export interface Database {
       estimate_status: EstimateStatus;
       statement_type: StatementType;
       payment_status: PaymentStatus;
+      subscription_status: SubscriptionStatus;
     };
     CompositeTypes: Record<string, never>;
   };

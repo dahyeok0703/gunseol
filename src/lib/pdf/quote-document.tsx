@@ -2,7 +2,7 @@ import "server-only";
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 
 import { formatKRW } from "@/lib/utils";
-import { styles, DocHeader, DocFooter, MetaRow, type PdfCompany } from "@/lib/pdf/shared";
+import { styles, DocHeader, DocFooter, MetaRow, Watermark, type PdfCompany } from "@/lib/pdf/shared";
 import type { EstimateLine } from "@/lib/data/estimates";
 
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("ko-KR");
@@ -20,6 +20,7 @@ export function QuoteDocument({
   createdAt,
   lines,
   totalPrice,
+  watermark = false,
 }: {
   company: PdfCompany;
   clientName: string | null;
@@ -29,10 +30,12 @@ export function QuoteDocument({
   createdAt: string;
   lines: EstimateLine[];
   totalPrice: number;
+  watermark?: boolean;
 }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        <Watermark show={watermark} />
         <DocHeader company={company} />
         <Text style={styles.title}>견 적 서</Text>
 

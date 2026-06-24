@@ -4,7 +4,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { getAuthContext } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
 import { getStatement } from "@/lib/data/statements";
-import { getPdfCompany } from "@/lib/data/workspace";
+import { getPdfCompany, getWorkspacePlan } from "@/lib/data/workspace";
 import { registerPdfFonts } from "@/lib/pdf/fonts";
 import { StatementDocument } from "@/lib/pdf/statement-document";
 import { pdfResponse } from "@/lib/pdf/http";
@@ -34,11 +34,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     projectName = p?.name ?? null;
   }
 
-  const company = await getPdfCompany(ctx.workspaceId);
+  const [company, plan] = await Promise.all([
+    getPdfCompany(ctx.workspaceId),
+    getWorkspacePlan(ctx.workspaceId),
+  ]);
   registerPdfFonts();
 
   const buffer = await renderToBuffer(
-    <StatementDocument company={company} statement={statement} projectName={projectName} />,
+    <StatementDocument
+      watermark={plan !== "pro"}
+      company={company}
+      statement={statement}
+      projectName={projectName}
+    />,
   );
 
   const label = statement.type === "purchase_order" ? "발주서" : "거래명세서";

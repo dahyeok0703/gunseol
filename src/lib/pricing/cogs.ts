@@ -29,3 +29,27 @@ export function estimateCostKrw(model: string, inputTokens: number, outputTokens
     (inputTokens / 1_000_000) * p.inputPerMTok + (outputTokens / 1_000_000) * p.outputPerMTok;
   return Math.round(usd * usdToKrw() * 100) / 100;
 }
+
+/**
+ * 추출 1회의 보수적(최대) 추정 토큰 — 마진 점검용.
+ * 이미지(비전) + 폴백(Sonnet)까지 고려한 넉넉한 가정.
+ */
+const WORST_CASE_EXTRACTION = { model: "claude-sonnet-4-6", inputTokens: 3000, outputTokens: 1200 };
+
+/** 추출 1회의 보수적 추정 원가(KRW). */
+export function worstCaseExtractionCostKrw(): number {
+  return estimateCostKrw(
+    WORST_CASE_EXTRACTION.model,
+    WORST_CASE_EXTRACTION.inputTokens,
+    WORST_CASE_EXTRACTION.outputTokens,
+  );
+}
+
+/**
+ * plan 의 월 AI 쿼터를 전부 소진했을 때의 추정 AI 원가 상한(KRW).
+ * 가격(설정값)과 비교해 plan 별 마진이 음수가 아닌지 점검한다.
+ */
+export function monthlyAiCostCeilingKrw(quota: number): number {
+  if (!Number.isFinite(quota)) return Number.POSITIVE_INFINITY;
+  return Math.round(worstCaseExtractionCostKrw() * quota);
+}

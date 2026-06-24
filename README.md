@@ -42,7 +42,14 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SITE_URL` | 선택 | 콜백 URL 생성용. 미설정 시 요청 헤더로 유추 (로컬: `http://localhost:3000`) |
 | `SUPABASE_SERVICE_ROLE_KEY` | 선택 | 서버 전용 관리 작업/시드용. **클라이언트 노출 금지** |
 | `ANTHROPIC_API_KEY` | 선택 | AI 견적 **항목 추출**용. 없으면 해당 기능만 **우아하게 비활성** |
+| `AI_USD_KRW` | 선택 | AI 원가 추정 환율(USD→KRW). 미설정 시 1400 |
+| `PORTONE_API_SECRET` | 선택 | PortOne 빌링키 정기결제 서버 비밀키. 없으면 결제 **준비 중**으로 비활성 |
+| `PORTONE_WEBHOOK_SECRET` | 선택 | 결제 웹훅 서명 검증(`whsec_` 포함). 무결성·멱등 처리에 사용 |
+| `NEXT_PUBLIC_PORTONE_STORE_ID` | 선택 | 브라우저 SDK(빌링키 발급)용 공개 식별자 |
+| `NEXT_PUBLIC_PORTONE_CHANNEL_KEY` | 선택 | 브라우저 SDK 채널 키 |
 
+> 결제 활성화에는 `PORTONE_API_SECRET` 과 `SUPABASE_SERVICE_ROLE_KEY` 가 함께 필요하다(구독 쓰기는 서비스 역할로만).
+>
 > 환경변수는 `src/lib/env.ts` 의 zod 스키마로 검증된다. 필수값이 없으면 친절한 에러로 즉시 실패한다.
 
 ### 4) 데이터베이스 마이그레이션 적용
@@ -154,5 +161,8 @@ http://localhost:3000 접속 → 회원가입하면 업체가 자동 생성되�
 - **수금·수익성**: 계약금/중도금/잔금 수금 관리(미수·연체·임박), 현장 정산(견적가/실행가/
   실제 지출/수금 → 실제 마진), 대시보드 받을 돈·연체·현장 수익성 차트(recharts).
   ⚠️ **금액·마진은 입력값 기반 참고치이며 회계·세무 신고를 대체하지 않음**
+- **구독 결제**: PortOne 빌링키 정기결제(free/pro). 어댑터 분리(`src/lib/billing/*`),
+  웹훅 서명 검증 + `event_id` 멱등, 기능 게이팅(현장 수·월 AI 추출·출력물 워터마크).
+  가격은 설정값(`PLAN_LIMITS`), 구독 쓰기는 서비스 역할로만. PORTONE 키 없으면 "준비 중"
 - **선택 키**: 없으면 해당 기능만 비활성
 - **모바일 우선**: 하단 탭바, 큰 터치 타깃, 안전영역, 차콜+모래+앰버 토큰

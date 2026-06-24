@@ -111,7 +111,8 @@ supabase/
   migrations/   0001 스키마, 0002 RLS, 0003 거래처/현장(soft delete·감사),
                 0004 단가표(카테고리 시드·즐겨찾기), 0005 견적 RPC(버전·합계),
                 0006 AI 사용량 RPC(쿼터·토큰 적재), 0007 업체 프로필+브랜드 Storage,
-                0008 공정 일정(tasks·사진)+reorder RPC+site 버킷, 0009 수금 인덱스
+                0008 공정 일정(tasks·사진)+reorder RPC+site 버킷, 0009 수금 인덱스,
+                0010 구독 결제(subscriptions·billing_payments·billing_events 멱등)
   seed.sql      데모 데이터(거래처2/현장1/품목10/견적1)
   tests/        RLS 격리 pgTAP 테스트
   README.md     데이터 모델·RLS 정책 상세

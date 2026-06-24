@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Building2, UserRound, Sparkles, LogOut, ChevronRight } from "lucide-react";
+import { Building2, UserRound, Sparkles, LogOut, ChevronRight, CreditCard } from "lucide-react";
 import { requireAuth } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
 import { features } from "@/lib/env";
@@ -45,13 +45,24 @@ export default async function SettingsPage() {
           <Row label="업체명" value={ctx.workspaceName} />
           <Row label="내 역할" value={roleLabel} />
           {ctx.role === "owner" ? (
-            <Link
-              href="/settings/company"
-              className="flex items-center justify-between border-t border-border pt-3 text-sm font-medium hover:text-foreground"
-            >
-              <span>업체 정보 · 출력물 브랜딩 (로고·도장)</span>
-              <ChevronRight className="size-4 text-muted-foreground" />
-            </Link>
+            <>
+              <Link
+                href="/settings/company"
+                className="flex items-center justify-between border-t border-border pt-3 text-sm font-medium hover:text-foreground"
+              >
+                <span>업체 정보 · 출력물 브랜딩 (로고·도장)</span>
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </Link>
+              <Link
+                href="/billing"
+                className="flex items-center justify-between border-t border-border pt-3 text-sm font-medium hover:text-foreground"
+              >
+                <span className="flex items-center gap-2">
+                  <CreditCard className="size-4 text-muted-foreground" /> 구독 결제 · 요금제
+                </span>
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </Link>
+            </>
           ) : null}
         </CardContent>
       </Card>

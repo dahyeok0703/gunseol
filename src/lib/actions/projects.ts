@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/context";
 import { action, ActionError } from "@/lib/actions/safe-action";
+import { planLimits } from "@/lib/constants/plan";
+import type { WorkspacePlan } from "@/types/database";
 import {
   projectCreateSchema,
   projectUpdateSchema,
@@ -16,6 +18,27 @@ const nn = (v: string | undefined) => (v && v.trim() ? v.trim() : null);
 export const createProjectAction = action(projectCreateSchema, async (input) => {
   const ctx = await requireAuth();
   const supabase = await createClient();
+
+  // 플랜 한도(현장 수) enforcement
+  const { data: ws } = await supabase
+    .from("workspaces")
+    .select("plan")
+    .eq("id", ctx.workspaceId)
+    .returns<{ plan: WorkspacePlan }[]>()
+    .maybeSingle();
+  const limit = planLimits(ws?.plan ?? "free").maxProjects;
+  if (Number.isFinite(limit)) {
+    const { count } = await supabase
+      .from("projects")
+      .select("id", { count: "exact", head: true })
+      .eq("workspace_id", ctx.workspaceId)
+      .is("deleted_at", null);
+    if ((count ?? 0) >= limit) {
+      throw new ActionError(
+        `무료 플랜은 현장 ${limit}개까지예요. Pro 로 업그레이드하면 무제한이에요.`,
+      );
+    }
+  }
 
   const { data, error } = await supabase
     .from("projects")
